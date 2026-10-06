@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Dev-wallet governance transactions after launch (each sends at most one transaction per run):
-#   ./govern.sh handoff         schedule the timelock handoff; run again after 48h to execute it
+#   ./govern.sh handoff         schedule the timelock handoff (burn side, and the Wells once added); again after 48h
 #   ./govern.sh register-pool   after the token graduates on Pons: register its pool so BuyBurn can buy and burn
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"

@@ -6,10 +6,38 @@ const { ethers } = require("ethers");
 const { loadConfig, loadDeployment, loadEnv } = require("./config");
 const { logger } = require("./log");
 const { reason } = require("./chain");
-const { runBuyBurn } = require("./duties/fees");
+const { setupVaults, runVault } = require("./duties/liquidity");
+const { runFeeRouter, runBuyBurn, runCreditLines } = require("./duties/fees");
 
 const log = logger("keeper");
 let stopping = false;
+const fs = require("fs");
+const path = require("path");
+
+// Optional state file (KEEPER_STATE_FILE), so one-shot runs (GitHub Actions, cron) still respect the harvest and
+// reserve-claim intervals and resume their scans. Only live runs write it: a dry run must not push back the first
+// real harvest.
+function loadState(file) {
+  const state = { vaults: {}, desks: {} };
+  if (!file || !fs.existsSync(file)) return state;
+  try {
+    const s = JSON.parse(fs.readFileSync(file, "utf8"));
+    for (const [k, v] of Object.entries(s.vaults || {})) state.vaults[k] = { lastHarvest: Number(v.lastHarvest) || 0 };
+    for (const [k, v] of Object.entries(s.desks || {}))
+      state.desks[k] = { lastClaim: Number(v.lastClaim) || 0, accounts: new Set(v.accounts || []), scanned: v.scanned ?? null };
+  } catch (e) {
+    log.warn("ignoring unreadable state file", { file, reason: e.message });
+  }
+  return state;
+}
+
+function saveState(file, state) {
+  if (!file) return;
+  const out = { vaults: state.vaults, desks: {} };
+  for (const [k, v] of Object.entries(state.desks)) out.desks[k] = { lastClaim: v.lastClaim, accounts: [...v.accounts], scanned: v.scanned };
+  fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(out));
+}
 
 async function init() {
   const env = loadEnv();
@@ -39,7 +67,8 @@ async function init() {
     keeper = ethers.getAddress(keeper);
   }
 
-  const ctx = { env, cfg, dep, provider, runner, keeper, dryRun: env.dryRun };
+  const stateFile = process.env.KEEPER_STATE_FILE || null;
+  const ctx = { env, cfg, dep, provider, runner, keeper, dryRun: env.dryRun, stateFile, state: loadState(stateFile) };
   log.info("starting", {
     network: env.network,
     chainId,
@@ -55,6 +84,7 @@ async function init() {
     log.info("keeper gas balance", { eth: ethers.formatEther(bal) });
     if (bal === 0n) log.warn("keeper has no ETH for gas");
   }
+  ctx.vaults = await setupVaults(ctx);
   return ctx;
 }
 
@@ -63,6 +93,10 @@ async function cycle(ctx, n) {
   const started = Date.now();
   log.info(`cycle ${n} start`, { block: await ctx.provider.getBlockNumber().catch(() => "?") });
   const steps = [
+    ...ctx.vaults.map((w) => [`liquidity ${w.ticker}`, () => runVault(ctx, w)]),
+    // Reserves go to the FeeRouter, the router forwards to BuyBurn, then BuyBurn spends them.
+    ["credit", () => runCreditLines(ctx)],
+    ["route", () => runFeeRouter(ctx)],
     ["buyburn", () => runBuyBurn(ctx)],
   ];
   for (const [name, fn] of steps) {
@@ -105,6 +139,9 @@ async function main() {
     } catch (e) {
       log.error("cycle failed", { reason: reason(e) });
     }
+    if (!ctx.dryRun) {
+      try { saveState(ctx.stateFile, ctx.state); } catch (e) { log.warn("could not save state", { reason: e.message }); }
+    }
     if (ctx.env.once) break;
     await sleep(ctx.cfg.loopIntervalSeconds * 1000);
   }
@@ -118,4 +155,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { init, cycle };
+module.exports = { init, cycle, loadState, saveState };

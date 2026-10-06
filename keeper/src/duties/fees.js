@@ -1,4 +1,5 @@
-// Protocol-fee pipeline: the order book pays its protocol fee into BuyBurn; the keeper buys the token with it and burns it.
+// Protocol-fee pipeline: order-book fees go straight to BuyBurn; Well fees and credit-line reserves go through the
+// FeeRouter to BuyBurn. The keeper buys the Takestock token with them and burns it.
 const { ethers } = require("ethers");
 const abis = require("../abis");
 const { exec, reason, blockTime } = require("../chain");
@@ -6,16 +7,39 @@ const { logger } = require("../log");
 const { buildRoute } = require("../routes");
 
 const BPS = 10_000n;
+const WAD = 10n ** 18n;
 
-// Tokens fees can arrive in: USDG (selling a stock) and the Stock Tokens with a registered pool (buying one).
+// Tokens fees can arrive in: USDG (order fills, Wells and credit lines) and Stock Tokens (order fills and Well fees).
 function feeTokens(ctx) {
   const list = [{ symbol: "USDG", address: ethers.getAddress(ctx.dep.usdg) }];
-  for (const [ticker, s] of Object.entries(ctx.dep.stocks || {})) list.push({ symbol: ticker, address: ethers.getAddress(s.token) });
+  const seen = new Set([list[0].address]);
+  const add = (symbol, token) => {
+    const address = ethers.getAddress(token);
+    if (!seen.has(address)) seen.add(address), list.push({ symbol, address });
+  };
+  for (const [ticker, s] of Object.entries(ctx.dep.stocks || {})) add(ticker, s.token);
+  for (const [ticker, w] of Object.entries(ctx.dep.liquidityVaults || {})) add(ticker, w.stock);
   return list;
 }
 
 function erc20(ctx, address) {
   return new ethers.Contract(address, abis.ERC20, ctx.provider);
+}
+
+// ---------------------------------------------------------------- FeeRouter.routeMany
+
+async function runFeeRouter(ctx) {
+  const log = logger("route", "FeeRouter");
+  if (!ctx.cfg.feeRouter.enabled || !ctx.dep.feeRouter) return;
+  const router = new ethers.Contract(ctx.dep.feeRouter, abis.FeeRouter, ctx.runner);
+  const held = [];
+  for (const t of feeTokens(ctx)) {
+    const bal = await erc20(ctx, t.address).balanceOf(ctx.dep.feeRouter);
+    if (bal > 0n) held.push({ ...t, bal });
+  }
+  if (held.length === 0) return log.info("nothing to route");
+  log.info("routing to BuyBurn", { tokens: held.map((t) => `${t.symbol}:${t.bal}`).join(",") });
+  await exec(ctx, log, router, "routeMany", [held.map((t) => t.address)], "routeMany");
 }
 
 // ---------------------------------------------------------------- BuyBurn.buyAndBurn
@@ -40,6 +64,7 @@ async function runBuyBurn(ctx) {
   const [last, interval, now] = await Promise.all([bb.lastRun(), bb.minInterval(), blockTime(ctx.provider)]);
   if (now < last + interval) return log.info("rate limited by minInterval", { nextInSec: last + interval - now });
 
+  const oracle = ctx.dep.oracle ? new ethers.Contract(ctx.dep.oracle, abis.Oracle, ctx.provider) : null;
   const candidates = [];
   for (const t of feeTokens(ctx)) {
     const [bal, cap] = await Promise.all([erc20(ctx, t.address).balanceOf(ctx.dep.buyBurn), bb.maxInputPerRun(t.address)]);
@@ -49,7 +74,13 @@ async function runBuyBurn(ctx) {
       continue;
     }
     const amount = bal < cap ? bal : cap;
-    const value = t.symbol === "USDG" ? amount : null;
+    let value = null;
+    if (t.symbol === "USDG") value = amount;
+    else if (oracle) {
+      try {
+        if (await oracle.isFresh(t.address)) value = await oracle.usdgValue(t.address, amount);
+      } catch {}
+    }
     candidates.push({ ...t, bal, cap, amount, value });
   }
   if (candidates.length === 0) return log.info("no fees waiting");
@@ -98,8 +129,73 @@ function symbolOf(ctx, a) {
   if (a === ethers.ZeroAddress) return "ETH";
   if (a.toLowerCase() === String(ctx.dep.usdg).toLowerCase()) return "USDG";
   if (a.toLowerCase() === String(ctx.dep.token).toLowerCase()) return ctx.dep.tokenSymbol || "TOKEN";
-  for (const [t, m] of Object.entries(ctx.dep.stocks || {})) if (a.toLowerCase() === m.token.toLowerCase()) return t;
+  for (const [t, m] of Object.entries({ ...(ctx.dep.stocks || {}), ...(ctx.dep.markets || {}) })) if (a.toLowerCase() === m.token.toLowerCase()) return t;
   return a;
 }
 
-module.exports = { runBuyBurn };
+// ---------------------------------------------------------------- credit lines
+
+async function runCreditLines(ctx) {
+  for (const [ticker, address] of Object.entries(ctx.dep.creditLines || {})) {
+    const log = logger("credit", ticker);
+    const desk = new ethers.Contract(address, abis.CreditDesk, ctx.runner);
+    const state = (ctx.state.desks[address] ||= { lastClaim: 0, accounts: new Set(), scanned: null });
+    if (ctx.cfg.creditLines.claimReserves) {
+      try {
+        await claimReserves(ctx, log, desk, state);
+      } catch (e) {
+        log.error("claimReserves check failed", { reason: reason(e) });
+      }
+    }
+    if (ctx.cfg.creditLines.logUnhealthy) {
+      try {
+        await logUnhealthy(ctx, log, desk, state);
+      } catch (e) {
+        log.error("health scan failed", { reason: reason(e) });
+      }
+    }
+  }
+}
+
+async function claimReserves(ctx, log, desk, state) {
+  const interval = ctx.cfg.creditLines.claimIntervalSeconds * 1000;
+  if (state.lastClaim && Date.now() - state.lastClaim < interval) return;
+  const [reserves, debt] = await Promise.all([desk.reserves(), desk.totalDebt()]);
+  // claimReserves accrues first, so reserves can grow from outstanding debt even when the stored figure is 0.
+  if (reserves === 0n && debt === 0n) {
+    log.info("no reserves to claim");
+    state.lastClaim = Date.now();
+    return;
+  }
+  // Interest over a short gap can round to zero, which reverts ZeroAmount: not an error.
+  const r = await exec(ctx, log, desk, "claimReserves", [], "claimReserves", ["ZeroAmount"]);
+  if (r.ok) state.lastClaim = Date.now();
+}
+
+// Liquidations are not automated; this only reports accounts below health factor 1.
+async function logUnhealthy(ctx, log, desk, state) {
+  const latest = await ctx.provider.getBlockNumber();
+  let from = state.scanned === null ? Number(ctx.dep.block || ctx.cfg.creditLines.scanFromBlock || 0) : state.scanned + 1;
+  const chunk = Number(ctx.cfg.creditLines.scanChunkBlocks || 50_000);
+  while (from <= latest) {
+    const to = Math.min(from + chunk - 1, latest);
+    for (const ev of await desk.queryFilter(desk.filters.Borrowed(), from, to)) state.accounts.add(ev.args.account);
+    state.scanned = to;
+    from = to + 1;
+  }
+  const vault = new ethers.Contract(await desk.vault(), abis.LiquidityVault, ctx.provider);
+  if (!(await vault.priceFresh())) return log.info("price stale; health factors unavailable", { borrowers: state.accounts.size });
+  let unhealthy = 0;
+  for (const account of state.accounts) {
+    const debt = await desk.debtOf(account);
+    if (debt === 0n) continue;
+    const hf = await desk.healthFactor(account);
+    if (hf < WAD) {
+      unhealthy++;
+      log.warn("UNHEALTHY account (liquidation is not automated)", { account, healthFactor: ethers.formatEther(hf), debt });
+    }
+  }
+  log.info("health scan done", { borrowers: state.accounts.size, unhealthy });
+}
+
+module.exports = { runFeeRouter, runBuyBurn, runCreditLines };

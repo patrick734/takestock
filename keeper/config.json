@@ -2,6 +2,26 @@
   "loopIntervalSeconds": 300,
   "txConfirmations": 1,
   "txTimeoutSeconds": 180,
+  "liquidityVaults": {
+    "only": []
+  },
+  "rebalance": {
+    "enabled": true,
+    "halfWidthTicks": 1200,
+    "edgeThresholdPct": 15,
+    "minSwapUsdg": "5",
+    "minIdleUsdg": "10",
+    "maxIdlePct": 25,
+    "routes": {}
+  },
+  "harvest": {
+    "enabled": true,
+    "intervalSeconds": 21600,
+    "minFeesUsdg": "0"
+  },
+  "feeRouter": {
+    "enabled": true
+  },
   "buyBurn": {
     "enabled": true,
     "slippageBps": 200,
@@ -12,5 +32,11 @@
       "TOKEN"
     ],
     "routes": {}
+  },
+  "creditLines": {
+    "claimReserves": true,
+    "claimIntervalSeconds": 86400,
+    "logUnhealthy": false,
+    "scanChunkBlocks": 50000
   }
 }

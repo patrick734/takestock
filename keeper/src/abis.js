@@ -1,4 +1,4 @@
-// ABIs come from the Hardhat build output in contracts/artifacts (run `npx hardhat compile` in contracts/ first), so
+// ABIs come from the Hardhat build output in burn/artifacts (run `npx hardhat compile` in burn/ first), so
 // the keeper always matches the Solidity source. KEEPER_ARTIFACTS_DIR overrides the location (the folder that
 // contains `src/`).
 const fs = require("fs");
@@ -8,7 +8,12 @@ const { CONTRACTS } = require("./config");
 const DIR = process.env.KEEPER_ARTIFACTS_DIR || path.join(CONTRACTS, "artifacts");
 
 const FILES = {
+  LiquidityVault: "src/WellTakestock.sol/WellTakestock.json",
+  Oracle: "src/OracleTakestock.sol/OracleTakestock.json",
+  FeeRouter: "src/FeeRouterTakestock.sol/FeeRouterTakestock.json",
   BuyBurn: "src/BuyBurnTakestock.sol/BuyBurnTakestock.json",
+  CreditDesk: "src/CreditDeskTakestock.sol/CreditDeskTakestock.json",
+  Position: "src/v4/PositionTakestock.sol/PositionTakestock.json",
   SwapAdapter: "src/v4/SwapAdapterTakestock.sol/SwapAdapterTakestock.json",
 };
 
@@ -28,7 +33,7 @@ const STOCK_TOKEN = [...ERC20, "function oraclePaused() view returns (bool)"];
 
 function load(name) {
   const file = path.join(DIR, FILES[name]);
-  if (!fs.existsSync(file)) throw new Error(`Missing ABI artifact ${file}. Run \`npx hardhat compile\` in contracts/ first.`);
+  if (!fs.existsSync(file)) throw new Error(`Missing ABI artifact ${file}. Run \`npx hardhat compile\` in burn/ first.`);
   return JSON.parse(fs.readFileSync(file, "utf8")).abi;
 }
 

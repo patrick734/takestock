@@ -21,3 +21,5 @@ burn/deployments/localhost.json
 burn/deployments/keeper.json
 burn/deployments/fork.json
 burn/deployments/hardhat.json
+keeper/.state/
+burn/deployments/*.wells-progress.json

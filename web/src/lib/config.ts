@@ -21,6 +21,19 @@ export const BURN = {
   swapAdapter: addr(gen.swapAdapter as string),
   timelock: addr(gen.timelock as string),
 };
+/** The Wells (one per Stock Token) and the credit line, added by ./launch-wells.sh. Empty until then. */
+type WellEntry = { vault: string; position: string; stock: string; name: string; feed?: string };
+const wellsGen = deployed as { usdg?: string; oracle?: string; feeRouter?: string; registry?: string; wells?: Record<string, WellEntry>; creditLines?: Record<string, string> };
+export type Well = { ticker: string; vault: Address; position: Address; stock: Address; name: string };
+export const WELLS: Well[] = Object.entries(wellsGen.wells ?? {})
+  .filter(([, w]) => addr(w.vault) && addr(w.position) && addr(w.stock))
+  .map(([ticker, w]) => ({ ticker, vault: w.vault as Address, position: w.position as Address, stock: w.stock as Address, name: w.name }));
+export const CREDIT_LINES: { ticker: string; desk: Address; well: Well }[] = Object.entries(wellsGen.creditLines ?? {})
+  .map(([ticker, desk]) => ({ ticker, desk: addr(desk)!, well: WELLS.find((w) => w.ticker === ticker)! }))
+  .filter((c) => c.desk && c.well);
+export const WELL_CONTRACTS = { oracle: addr(wellsGen.oracle), feeRouter: addr(wellsGen.feeRouter), registry: addr(wellsGen.registry) };
+export const USDG_ADDRESS = (addr(wellsGen.usdg) ?? addr(process.env.NEXT_PUBLIC_USDG) ?? "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168") as Address;
+
 /** First block of the deployment, for event scans. */
 export const BOOK_BLOCK = BigInt(Number(gen.block ?? process.env.NEXT_PUBLIC_BOOK_BLOCK ?? 0));
 

@@ -22,7 +22,7 @@ function resolveHop(ctx, hop, tokenIn) {
     if (!ctx.dep.token) throw new Error("the Takestock token is not set yet");
     return ethers.getAddress(ctx.dep.token);
   }
-  const stock = ctx.dep.stocks && ctx.dep.stocks[name];
+  const stock = (ctx.dep.markets && ctx.dep.markets[name]) || (ctx.dep.stocks && ctx.dep.stocks[name]);
   if (stock) return ethers.getAddress(stock.token);
   throw new Error(`unknown route hop "${hop}"`);
 }

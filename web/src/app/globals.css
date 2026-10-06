@@ -750,3 +750,61 @@ h2 { font-family: var(--f-display); font-weight: 850; font-stretch: 118%; font-s
   .target-chart .hit, .target-chart .tag { animation: none; opacity: 1; }
   .target-chart .hit-ring { display: none; }
 }
+
+/* ---------------------------------------------------------------- Wells and the credit line */
+.order-shell > .swap { box-shadow: none; border: none; background: transparent; padding: 6px; }
+.seg-full { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+.seg-full button { padding: 9px 8px; font-weight: 650; }
+.seg-wrap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.well-ticket { display: grid; gap: 12px; }
+.well-ticket-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.well-ticket-head .tk-dot { width: 38px; height: 38px; }
+.well-ticket-head b { display: block; font-family: var(--f-display); font-weight: 800; font-stretch: 112%; font-size: 21px; line-height: 1.1; }
+.well-ticket-head span { display: block; margin-top: 2px; }
+.well-ticket-head a { white-space: nowrap; text-decoration: none; }
+.well-ticket-head a:hover { color: var(--accent); }
+
+.wells { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.wells.skeleton { width: 100%; display: block; }
+.well {
+  display: grid; gap: 16px; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; position: relative;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.well:hover { border-color: var(--rule-2); transform: translateY(-1px); box-shadow: var(--shadow); }
+.well.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.well-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.well-top .tk-dot { width: 36px; height: 36px; }
+.well-name b { display: block; font-family: var(--f-display); font-weight: 800; font-stretch: 115%; font-size: 22px; line-height: 1; }
+.well-name span { display: block; margin-top: 3px; }
+.well-state { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.well-state i { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+.well-state.live { color: var(--up); }
+.well-state.live i { background: var(--up); box-shadow: 0 0 0 3px var(--up-soft); }
+.well-state.closed { color: var(--warn); }
+.well-state.closed i { background: var(--warn); }
+.well-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.well-figs em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); margin-bottom: 3px; }
+.well-figs b { font-size: 15px; font-weight: 600; }
+.cap { display: block; height: 4px; border-radius: 4px; background: var(--paper-2); overflow: hidden; margin-top: -4px; }
+.cap i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+
+.credit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: clamp(20px, 4vw, 56px); align-items: start; }
+.credit + .credit { margin-top: 40px; }
+.credit-info { display: grid; gap: 8px; }
+.credit-figs { margin-top: 14px; }
+.credit-figs b { font-size: 34px; }
+.credit-info .kv { margin-top: 10px; }
+.credit-ticket { display: grid; gap: 12px; background: var(--card); border: 1px solid var(--rule); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); }
+@media (max-width: 980px) {
+  .credit { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .well-figs { grid-template-columns: 1fr 1fr; }
+  .well-figs span:last-child { grid-column: 1 / -1; }
+  .credit-figs b { font-size: 26px; }
+}
+@media (max-width: 480px) {
+  .wells-hero .figures b { font-size: 26px; }
+  .wells-hero .figures div { padding-right: 12px; margin-right: 12px; }
+}

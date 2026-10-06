@@ -6,8 +6,8 @@
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb",
-      "spotUsdg": 333.0978,
-      "offBps": -36,
+      "spotUsdg": 333.3364,
+      "offBps": -29,
       "liquidity": "589092088949012346"
     }
   },
@@ -30,32 +30,32 @@
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0xd32646872e6712af8cf778e34b6bbef1d2ae0bddd83764e1b07333518ad59333",
-      "spotUsdg": 255.6871,
-      "offBps": 2,
+      "spotUsdg": 255.5574,
+      "offBps": -3,
       "liquidity": "6770486008555265"
     }
   },
   "CRCL": {
-    "oracleUsd": 84.557,
-    "updatedAt": "2026-10-06T19:48:16.000Z",
+    "oracleUsd": 84.565,
+    "updatedAt": "2026-10-06T20:05:47.000Z",
     "pool": {
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0x60a78f9462af550fbf603774b1eeb4a6b880cd2a475862a07b22d035f22310b7",
       "spotUsdg": 3.402567865403252e+50,
-      "offBps": 4.02399312345903e+52,
+      "offBps": 4.0236124465242735e+52,
       "liquidity": "0"
     }
   },
   "GME": {
-    "oracleUsd": 24.605,
-    "updatedAt": "2026-10-06T19:40:52.000Z",
+    "oracleUsd": 24.735,
+    "updatedAt": "2026-10-06T19:57:52.000Z",
     "pool": {
       "fee": 10000,
       "tickSpacing": 200,
       "poolId": "0x3d436b4fdc532c61a0bf15d6cae80a66eb8f28ee9daec34dbec4b5bc9964063b",
       "spotUsdg": 24.7614,
-      "offBps": 64,
+      "offBps": 11,
       "liquidity": "1224312427658506"
     }
   },
@@ -66,33 +66,33 @@
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0xd4ecb79fdc521d7725d22b33ed43cb4e47aa96bfad76aa29577e3151f723ac5e",
-      "spotUsdg": 347.7777,
+      "spotUsdg": 347.7778,
       "offBps": 10,
       "liquidity": "524756243556745016"
     }
   },
   "INTC": {
-    "oracleUsd": 113.515,
-    "updatedAt": "2026-10-06T19:36:00.000Z",
+    "oracleUsd": 112.92,
+    "updatedAt": "2026-10-06T19:56:01.000Z",
     "pool": {
       "fee": 10000,
       "tickSpacing": 200,
       "poolId": "0xf2e329e631d0fb315a5c563ee3a9120f24822b5ef6c502a91cb56b174d5d8c22",
-      "spotUsdg": 114.2526,
-      "offBps": 65,
-      "liquidity": "207222965866808823"
+      "spotUsdg": 113.5605,
+      "offBps": 57,
+      "liquidity": "282843864498356232"
     }
   },
   "META": {
-    "oracleUsd": 744.49289488,
-    "updatedAt": "2026-10-06T15:34:03.000Z",
+    "oracleUsd": 740.53375232,
+    "updatedAt": "2026-10-06T19:53:37.000Z",
     "pool": {
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36",
-      "spotUsdg": 742.8763,
-      "offBps": -22,
-      "liquidity": "2221077513155673981"
+      "spotUsdg": 741.7086,
+      "offBps": 16,
+      "liquidity": "2322145898414463545"
     }
   },
   "MSFT": {
@@ -102,20 +102,20 @@
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0x9194a557b6a6bb2236b49ea7e2bbccec5d3eeb705aef00903be4b3de1d949579",
-      "spotUsdg": 531.9102,
-      "offBps": 14,
+      "spotUsdg": 530.9085,
+      "offBps": -5,
       "liquidity": "82911524425842821"
     }
   },
   "MSTR": {
-    "oracleUsd": 164.095,
-    "updatedAt": "2026-10-06T19:28:42.000Z",
+    "oracleUsd": 165.039,
+    "updatedAt": "2026-10-06T20:05:43.000Z",
     "pool": {
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0x571d552a8b87bf56a26a17f1f908c12ecfee4bc92a9b35a41ea9670311169701",
       "spotUsdg": 164.4156,
-      "offBps": 20,
+      "offBps": -38,
       "liquidity": "0"
     }
   },
@@ -126,8 +126,8 @@
       "fee": 10000,
       "tickSpacing": 200,
       "poolId": "0x6fa3ee0048e78bf0a513eb0ab56f482944a767c21db990fcf555605e69f05659",
-      "spotUsdg": 1057.6172,
-      "offBps": 88,
+      "spotUsdg": 1055.8222,
+      "offBps": 71,
       "liquidity": "87842743319917543"
     }
   },
@@ -138,21 +138,21 @@
       "fee": 100,
       "tickSpacing": 1,
       "poolId": "0x6444a8e0b267406a15db74ca00c4a24bdfa81ed3180f5b6d0851f8ed6f4f29c5",
-      "spotUsdg": 239.5619,
-      "offBps": 5,
-      "liquidity": "1102794830327974102"
+      "spotUsdg": 239.7359,
+      "offBps": 13,
+      "liquidity": "29950506314884493292"
     }
   },
   "PLTR": {
-    "oracleUsd": 192.895,
-    "updatedAt": "2026-10-06T17:41:06.000Z",
+    "oracleUsd": 191.82,
+    "updatedAt": "2026-10-06T20:03:08.000Z",
     "pool": {
       "fee": 10000,
       "tickSpacing": 200,
       "poolId": "0xee430ee1003e1985e1828a01b9a20dad67ad4302994fe2abb4a173de4ac54623",
-      "spotUsdg": 192.2367,
-      "offBps": -34,
-      "liquidity": "441551377695986944"
+      "spotUsdg": 192.238,
+      "offBps": 22,
+      "liquidity": "693044044022693476"
     }
   },
   "QQQ": {
@@ -168,27 +168,27 @@
     }
   },
   "SNDK": {
-    "oracleUsd": 1655.81,
-    "updatedAt": "2026-10-06T19:37:21.000Z",
+    "oracleUsd": 1664.385,
+    "updatedAt": "2026-10-06T20:07:22.000Z",
     "pool": {
       "fee": 10000,
       "tickSpacing": 200,
       "poolId": "0x2707cb88a6a40fa0f948f58958051ba097d6f6a3cf7f87929bd68ccc5becea24",
-      "spotUsdg": 1669.4039,
-      "offBps": 82,
-      "liquidity": "40005337025329288"
+      "spotUsdg": 1669.3254,
+      "offBps": 30,
+      "liquidity": "40007278763519598"
     }
   },
   "SPCX": {
-    "oracleUsd": 173.17685,
-    "updatedAt": "2026-10-06T19:34:38.000Z",
+    "oracleUsd": 172.0554,
+    "updatedAt": "2026-10-06T19:53:38.000Z",
     "pool": {
       "fee": 10000,
       "tickSpacing": 200,
       "poolId": "0xcb6ffbcc84359535c2cc0a5688c0a76520ea6e0a4820fddd3ac8d7880e576370",
-      "spotUsdg": 173.1316,
-      "offBps": -3,
-      "liquidity": "151445043433442634"
+      "spotUsdg": 173.1303,
+      "offBps": 62,
+      "liquidity": "151489482273827430"
     }
   },
   "SPY": {
@@ -198,9 +198,9 @@
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0xfe2a80bb5618fd14984b92ca6d45bf5ba67443ddb1435e28b2e48df2fc1526cd",
-      "spotUsdg": 780.2803,
-      "offBps": 3,
-      "liquidity": "4509542063341520006"
+      "spotUsdg": 780.1739,
+      "offBps": 1,
+      "liquidity": "4509526025217685686"
     }
   },
   "TSLA": {
@@ -210,7 +210,7 @@
       "fee": 3000,
       "tickSpacing": 60,
       "poolId": "0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e",
-      "spotUsdg": 380.6006,
+      "spotUsdg": 380.6014,
       "offBps": 32,
       "liquidity": "539273284514270419"
     }

@@ -1,3 +1,5 @@
 {
-  "loopIntervalSeconds": 1
+  "loopIntervalSeconds": 1,
+  "harvest": { "intervalSeconds": 0 },
+  "creditLines": { "claimIntervalSeconds": 0 }
 }

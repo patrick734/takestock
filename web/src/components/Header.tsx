@@ -2,7 +2,7 @@
 
 import { useAccount, useDisconnect } from "wagmi";
 import { BRAND } from "@/lib/brand";
-import { CHAIN_ID } from "@/lib/config";
+import { CHAIN_ID, CREDIT_LINES, WELLS } from "@/lib/config";
 import { short } from "@/lib/format";
 import { useOpenWallet } from "./Wallet";
 
@@ -19,10 +19,12 @@ export function Header() {
         </a>
         <nav className="nav">
           <a href="/#trade">Take profit</a>
+          {WELLS.length > 0 && <a href="/wells/">Wells</a>}
+          {CREDIT_LINES.length > 0 && <a href="/wells/#borrow">Borrow</a>}
           <a href="/#orders">My orders</a>
           <a href="/#markets">Markets</a>
-          <a href="/#how">How it works</a>
-          <a href="/#token">$TSTK</a>
+          {!WELLS.length && <a href="/#how">How it works</a>}
+          <a href="/#token">${BRAND.token.symbol}</a>
           <a href="/#faq">FAQ</a>
         </nav>
         <div className="top-right">

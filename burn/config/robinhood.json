@@ -137,6 +137,34 @@
     "buyBurnMinIntervalSeconds": 3600,
     "buyBurnMaxUsdgPerRun": 250,
     "buyBurnMaxStockPerRun": "0.5",
-    "timelockDelaySeconds": 172800
+    "timelockDelaySeconds": 172800,
+    "liquidityVaults": [
+      "TSLA",
+      "NVDA",
+      "AAPL",
+      "META"
+    ],
+    "creditLines": [
+      "META"
+    ],
+    "heldValueCapUsdg": 25000,
+    "creditLine": {
+      "supplyCapUsdg": 10000,
+      "borrowCapUsdg": 5000,
+      "risk": {
+        "ltvBps": 4000,
+        "liquidationThresholdBps": 5500,
+        "liquidationBonusBps": 600,
+        "closeFactorBps": 5000,
+        "maxCollateralShareBps": 3000,
+        "reserveFactorBps": 1000
+      },
+      "rates": {
+        "baseRatePerYear": "0.02",
+        "slope1PerYear": "0.06",
+        "slope2PerYear": "1.0",
+        "kinkUtilization": "0.8"
+      }
+    }
   }
 }

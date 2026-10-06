@@ -17,6 +17,7 @@ import { TargetChart } from "@/components/TargetChart";
 import { MyOrders, describe } from "@/components/MyOrders";
 import { CopyCA } from "@/components/CopyCA";
 import { MarketsTable } from "@/components/MarketsTable";
+import { WellsTeaser } from "@/components/Wells";
 import { Contracts, FAQ, Footer, HowItWorks, TokenSection, type Fees } from "@/components/Sections";
 
 export default function Home() {
@@ -145,6 +146,7 @@ export default function Home() {
         </section>
         <MyOrders tokens={tokens} markets={markets} refreshKey={refreshKey} />
         <MarketsTable tokens={tokens} markets={markets} onTrade={pick} />
+        <WellsTeaser />
         <HowItWorks fees={fees} />
         <Contracts fees={fees} />
         <TokenSection />

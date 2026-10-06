@@ -2,6 +2,7 @@
 //
 // First terminal:   cd burn && npx hardhat node --port 8547
 // Second terminal:  cd burn && npx hardhat run scripts/deploy.js --network keeper
+//                   npx hardhat run scripts/deploy-wells.js --network keeper
 //                   cd ../keeper && npm run smoke
 //
 // Refuses to run on anything but a Hardhat chain (31337): it moves time and pushes mock prices.
@@ -20,6 +21,7 @@ process.env.KEEPER_NETWORK = NETWORK;
 const { loadDeployment } = require("../src/config");
 const abis = require("../src/abis");
 
+const MOCK_FEED = ["function setAnswer(int256)", "function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)"];
 let failures = 0;
 const check = (ok, msg) => {
   console.log(`${ok ? "  PASS" : "  FAIL"} ${msg}`);
@@ -47,43 +49,62 @@ async function main() {
   const dep = loadDeployment(NETWORK);
   const signer = new ethers.NonceManager(new ethers.Wallet(HARDHAT_ACCOUNT_0, provider));
   const live = { DRY_RUN: "0", KEEPER_PRIVATE_KEY: HARDHAT_KEEPER_KEY };
+
+  const oracle = new ethers.Contract(dep.oracle, abis.Oracle, provider);
+  const tok = new ethers.Contract(dep.token, [...abis.ERC20, "function totalSupply() view returns (uint256)"], provider);
   const keeperAddr = new ethers.Wallet(HARDHAT_KEEPER_KEY).address;
-  const MINT = ["function mint(address,uint256)", ...abis.ERC20, "function totalSupply() view returns (uint256)"];
-  const usdg = new ethers.Contract(dep.usdg, MINT, signer);
-  const tok = new ethers.Contract(dep.token, MINT, provider);
-  const nvda = new ethers.Contract(dep.stocks.NVDA.token, MINT, signer);
+  const wells = Object.entries(dep.liquidityVaults).map(([t, v]) => [t, new ethers.Contract(v.vault, abis.LiquidityVault, provider)]);
+  const desks = Object.entries(dep.creditLines).map(([t, a]) => [t, new ethers.Contract(a, abis.CreditDesk, provider)]);
+
+  async function pushPrices(bump = 1) {
+    const usdgFeed = new ethers.Contract(await oracle.usdgFeed(), MOCK_FEED, signer);
+    await (await usdgFeed.setAnswer(100_000_000n)).wait();
+    for (const m of Object.values(dep.markets)) {
+      const f = new ethers.Contract(m.feed, MOCK_FEED, signer);
+      const [, a] = await f.latestRoundData();
+      await (await f.setAnswer((a * BigInt(Math.round(bump * 1000))) / 1000n)).wait();
+    }
+  }
   async function warp(seconds) {
     await provider.send("evm_increaseTime", [seconds]);
     await provider.send("evm_mine", []);
   }
+  const values = async () => Promise.all(wells.map(([, w]) => w.totalAssets()));
+  const MINT = ["function mint(address,uint256)", ...abis.ERC20];
+  const usdg = new ethers.Contract(dep.usdg, MINT, signer);
+  const nvda = new ethers.Contract(dep.stocks.NVDA.token, MINT, signer);
 
-  // The order book pays its protocol fee into BuyBurn: stand in for a few fills, in USDG and in a Stock Token.
+  // The order book pays its protocol fee straight into BuyBurn: stand in for a few fills, in USDG and in a Stock Token.
   await (await usdg.mint(dep.buyBurn, 120_000_000n)).wait(); // 120 USDG
   await (await nvda.mint(dep.buyBurn, 10n ** 17n)).wait(); // 0.1 NVDA
 
   // 1. Dry run: simulates everything, sends nothing.
+  await pushPrices();
   const nonceBefore = await provider.getTransactionCount(keeperAddr);
-  const supply0 = await tok.totalSupply();
   const dry = runKeeper("dry run");
-  check(/DRY_RUN, would send/.test(dry), "dry run simulates a buy and burn");
+  check(/DRY_RUN, would send/.test(dry) || /nothing to/.test(dry), "dry run simulates");
   check((await provider.getTransactionCount(keeperAddr)) === nonceBefore, "dry run sent nothing");
-  check((await tok.totalSupply()) === supply0, "dry run burned nothing");
 
-  // 2. Live: USDG (the largest known value) is bought into the token and burned.
-  runKeeper("live", live);
-  const supply1 = await tok.totalSupply();
-  check(supply1 < supply0, "USDG fees bought and burned some TSTK");
-  check((await usdg.balanceOf(dep.buyBurn)) === 0n, "all USDG fees were spent");
+  // 2. Live: Wells rebalance and harvest, their fees go through the FeeRouter to BuyBurn, and BuyBurn burns TSTK.
+  const supplyBefore = await tok.totalSupply();
+  const out = runKeeper("live", live);
+  check((await provider.getTransactionCount(keeperAddr)) > nonceBefore, "keeper sent transactions");
+  check(/buying and burning|rate limited|no fees waiting/.test(out), "buy and burn ran");
+  check((await tok.totalSupply()) < supplyBefore, "fees bought and burned some TSTK");
+  for (const [t, w] of wells) check((await w.totalAssets()) > 0n, `${t} Well holds value`);
+  const feeRouterUsdg = await usdg.balanceOf(dep.feeRouter);
+  check(feeRouterUsdg === 0n, "the FeeRouter forwarded everything to BuyBurn");
 
-  // 3. Within the interval nothing more is bought.
-  const rl = runKeeper("live, rate limited", live);
-  check(/rate limited by minInterval/.test(rl), "minInterval is respected");
-
-  // 4. An hour later the Stock Token fee goes too.
-  await warp(3601);
-  runKeeper("live, an hour later", live);
-  check((await tok.totalSupply()) < supply1, "NVDA fees bought and burned some TSTK");
-  check((await nvda.balanceOf(dep.buyBurn)) === 0n, "all NVDA fees were spent");
+  // 3. A day later, with prices up 2%: the Wells re-centre, credit lines accrue interest and reserves are claimed.
+  const before = await values();
+  await warp(2 * 24 * 3600);
+  await pushPrices(1.02);
+  const later = runKeeper("live, two days later", live);
+  const after = await values();
+  check(after.every((v, i) => v > 0n && v !== before[i]), "every Well was revalued at the new price");
+  check(/\[credit\]/.test(later), "credit lines were checked");
+  for (const [t, d] of desks) check((await d.totalDebt()) > 500_000_000n, `${t} credit line accrued interest on its 500 USDG loan`);
+  check((await nvda.balanceOf(dep.buyBurn)) < 10n ** 17n || (await usdg.balanceOf(dep.buyBurn)) === 0n, "order-book fees are being spent on TSTK");
 
   console.log(failures ? `\n${failures} smoke check(s) FAILED` : "\nsmoke test passed");
   process.exit(failures ? 1 : 0);

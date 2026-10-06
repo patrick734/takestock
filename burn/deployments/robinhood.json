@@ -37,5 +37,64 @@
   "buyBurn": "0x0A0ACa93A85C9487EC8b0078cA6bb5FDfa1C5774",
   "pendingTimelockAcceptances": [
     "0xC46F9eb98Fc79B98D43E345780290945B5C5f7C9"
+  ],
+  "oracle": "0x726a666Fbc357A4B5ec6E5cE43157D0074e473D9",
+  "feeRouter": "0xc7FDFA4204E02Baf6303d493Aa50e93C86121463",
+  "registry": "0xBB28C49034C25A57b871A9eEd757BEfd066Cb81a",
+  "markets": {
+    "TSLA": {
+      "token": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+      "feed": "0x4A1166a659A55625345e9515b32adECea5547C38",
+      "name": "Tesla"
+    },
+    "NVDA": {
+      "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+      "feed": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
+      "name": "NVIDIA"
+    },
+    "AAPL": {
+      "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+      "feed": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
+      "name": "Apple"
+    },
+    "META": {
+      "token": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+      "feed": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
+      "name": "Meta"
+    }
+  },
+  "liquidityVaults": {
+    "TSLA": {
+      "vault": "0xD2d1EF1aDa8a5b7A8fCcb856a16E8dD36Ab7f3Cf",
+      "position": "0x128f0acd071A6018e2D83D70399A89f27f558086",
+      "stock": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+      "name": "Tesla"
+    },
+    "NVDA": {
+      "vault": "0xf71e97B9489e7e7a0020F292b51905a75B33d67c",
+      "position": "0x14b3A94975F22579952AAEFF382c49BC4d5A4e76",
+      "stock": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+      "name": "NVIDIA"
+    },
+    "AAPL": {
+      "vault": "0xAC39f92451FF78F4131909aB38Aa1534193Ec8F5",
+      "position": "0x31bc76c1efEBba588c917Df5F2C5c2E741Edb341",
+      "stock": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+      "name": "Apple"
+    },
+    "META": {
+      "vault": "0xB43970ac0936014393257Af050482B70150e3587",
+      "position": "0x63D1D9c42E68929402A54862C3E52e29bf3938d6",
+      "stock": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+      "name": "Meta"
+    }
+  },
+  "creditLines": {
+    "META": "0xF30ad5567ead5F42C704a18F451147c8EcA0FDA3"
+  },
+  "wellsBlock": 81936031,
+  "wellsTimelockAcceptances": [
+    "0x726a666Fbc357A4B5ec6E5cE43157D0074e473D9",
+    "0xBB28C49034C25A57b871A9eEd757BEfd066Cb81a"
   ]
 }

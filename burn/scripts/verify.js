@@ -1,4 +1,5 @@
-// Publishes the source code of every deployed Takestock contract: the order book, router and quoter, and the burn contracts.
+// Publishes the source code of every deployed Takestock contract: the order book, router and quoter, the burn contracts,
+// and the Wells and credit line.
 // Read-only: no wallet, no key, no gas. Run by ../verify.sh. Already-verified contracts are skipped.
 //
 //   1. Sourcify (sourcify.dev): the open verification database. Scripts are welcome there, and the Robinhood Chain
@@ -273,6 +274,14 @@ async function main() {
   await add("TimelockTakestock", "TimelockTakestock", d.timelock);
   await add("SwapAdapterTakestock", "SwapAdapterTakestock", d.swapAdapter);
   await add("BuyBurnTakestock", "BuyBurnTakestock", d.buyBurn);
+  await add("OracleTakestock", "OracleTakestock", d.oracle);
+  await add("FeeRouterTakestock", "FeeRouterTakestock", d.feeRouter);
+  await add("RegistryTakestock", "RegistryTakestock", d.registry);
+  for (const [t, v] of Object.entries(d.liquidityVaults || {})) {
+    await add(`WellTakestock ${t}`, "WellTakestock", v.vault);
+    await add(`PositionTakestock ${t}`, "PositionTakestock", v.position);
+  }
+  for (const [t, desk] of Object.entries(d.creditLines || {})) await add(`CreditDeskTakestock ${t}`, "CreditDeskTakestock", desk);
 
   // Published source must not carry anything from this Mac (user name, folders).
   const home = os.homedir();

@@ -1,7 +1,7 @@
 "use client";
 
 import { BRAND } from "@/lib/brand";
-import { BURN, LIMIT_BOOK, QUOTER, ROUTER, addressUrl } from "@/lib/config";
+import { BURN, CREDIT_LINES, LIMIT_BOOK, QUOTER, ROUTER, WELLS, addressUrl } from "@/lib/config";
 import { CopyCA } from "./CopyCA";
 
 const feeTxt = (bps: number) => `${(bps / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}%`;
@@ -73,6 +73,14 @@ export function Contracts({ fees }: { fees: Fees }) {
                 </dd>
               </div>
             ))}
+            {WELLS.length > 0 && (
+              <div>
+                <dt>Wells and credit line</dt>
+                <dd>
+                  <a href="/wells/#well-contracts">{3 + 2 * WELLS.length + CREDIT_LINES.length} contracts, listed on the Wells page</a>
+                </dd>
+              </div>
+            )}
             <div>
               <dt>Venues</dt>
               <dd>Uniswap v3 and v4 on Robinhood Chain</dd>
@@ -213,6 +221,7 @@ export function Footer() {
               </a>
             )}
             <a href="/#markets">Markets</a>
+            {WELLS.length > 0 && <a href="/wells/">Wells</a>}
             <a href="/#contracts">Contracts</a>
           </span>
         </div>
