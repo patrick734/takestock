@@ -1,0 +1,67 @@
+# Takestock burn keeper: spends the protocol fees waiting in BuyBurnTakestock on $TSTK and burns it, about every
+# 15 minutes (BuyBurn itself allows at most one buy an hour). Does nothing until burn/deployments/robinhood.json
+# is committed.
+# Dry run (simulates, sends nothing) until the repository variable KEEPER_LIVE is set to 1.
+# Secret KEEPER_PRIVATE_KEY is created by: node tools/wallet.js keeper-secret. Optional secret RPC_URL.
+name: Takestock burn keeper
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: takestock-burn-keeper
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write # only to keep the schedule from being paused after 60 quiet days
+
+jobs:
+  keeper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deployed yet?
+        id: dep
+        run: |
+          if [ -f burn/deployments/robinhood.json ]; then echo "live=1" >> "$GITHUB_OUTPUT"; else echo "No deployment yet; nothing to do."; fi
+      - uses: actions/setup-node@v4
+        if: steps.dep.outputs.live == '1'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            burn/package-lock.json
+            keeper/package-lock.json
+      - name: Cache compiled contracts
+        if: steps.dep.outputs.live == '1'
+        id: art
+        uses: actions/cache@v4
+        with:
+          path: burn/artifacts
+          key: artifacts-${{ hashFiles('burn/src/**', 'burn/hardhat.config.js', 'burn/package-lock.json') }}
+      - name: Compile contracts (ABIs for the keeper)
+        if: steps.dep.outputs.live == '1' && steps.art.outputs.cache-hit != 'true'
+        working-directory: burn
+        run: npm ci --no-audit --no-fund && npx hardhat compile
+      - name: Install keeper
+        if: steps.dep.outputs.live == '1'
+        working-directory: keeper
+        run: npm ci --omit=dev --no-audit --no-fund
+      - name: Run one keeper cycle
+        if: steps.dep.outputs.live == '1'
+        working-directory: keeper
+        run: node src/index.js --once
+        env:
+          KEEPER_PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+          RPC_URL: ${{ secrets.RPC_URL || 'https://rpc.mainnet.chain.robinhood.com' }}
+          KEEPER_NETWORK: robinhood
+          DRY_RUN: ${{ vars.KEEPER_LIVE == '1' && '0' || '1' }}
+      - name: Keep the schedule alive
+        if: always() && github.event_name == 'schedule'
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/burn-keeper.yml/enable" >/dev/null || true
+        env:
+          GH_TOKEN: ${{ github.token }}

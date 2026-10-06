@@ -1,0 +1,16 @@
+{
+  "loopIntervalSeconds": 300,
+  "txConfirmations": 1,
+  "txTimeoutSeconds": 180,
+  "buyBurn": {
+    "enabled": true,
+    "slippageBps": 200,
+    "defaultRoute": [
+      "IN",
+      "USDG",
+      "ETH",
+      "TOKEN"
+    ],
+    "routes": {}
+  }
+}

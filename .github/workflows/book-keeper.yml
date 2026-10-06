@@ -1,0 +1,54 @@
+# Takestock book keeper: fills orders on BookTakestock (limit, take-profit, stop-loss, bracket, partial fills)
+# and refunds expired ones. Each run watches the book for about 13 minutes, checking every 15 seconds; a new run
+# starts every 15 minutes, so the book is watched almost all the time.
+# Does nothing until web/src/generated/book.json holds a deployment.
+# Dry run (finds and simulates fills, sends nothing) until the repository variable KEEPER_LIVE is set to 1.
+# Uses the same secret as the burn keeper: KEEPER_PRIVATE_KEY (node tools/wallet.js keeper-secret).
+name: Takestock book keeper
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: takestock-book-keeper
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write # only to keep the schedule from being paused after 60 quiet days
+
+jobs:
+  keeper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deployed yet?
+        id: dep
+        run: |
+          if grep -q '"book"' web/src/generated/book.json 2>/dev/null; then echo "live=1" >> "$GITHUB_OUTPUT"; else echo "No deployment yet; nothing to do."; fi
+      - uses: actions/setup-node@v4
+        if: steps.dep.outputs.live == '1'
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install engine
+        if: steps.dep.outputs.live == '1'
+        run: npm ci --workspace engine --include-workspace-root=false --ignore-scripts --no-audit --no-fund
+      - name: Watch and fill
+        if: steps.dep.outputs.live == '1'
+        working-directory: engine
+        run: npx tsx scripts/keeper.ts
+        env:
+          KEEPER_PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+          RPC_URL: ${{ secrets.RPC_URL || 'https://rpc.mainnet.chain.robinhood.com' }}
+          KEEPER_LIVE: ${{ vars.KEEPER_LIVE }}
+          RUN_FOR_MS: "780000"
+          POLL_MS: "15000"
+      - name: Keep the schedule alive
+        if: always() && github.event_name == 'schedule'
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/book-keeper.yml/enable" >/dev/null || true
+        env:
+          GH_TOKEN: ${{ github.token }}

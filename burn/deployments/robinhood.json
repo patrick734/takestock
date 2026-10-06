@@ -1,0 +1,41 @@
+{
+  "network": "robinhood",
+  "chainId": 4663,
+  "roles": {
+    "admin": "0x3d2f9d09AddEeCE234df8c5D61C8322138301dea",
+    "guardian": "0x3d2f9d09AddEeCE234df8c5D61C8322138301dea",
+    "keeper": "0xf539011ffb50c0CCb78B947AaDEBEa42a70B3015"
+  },
+  "stocks": {
+    "TSLA": {
+      "token": "0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+      "name": "Tesla"
+    },
+    "NVDA": {
+      "token": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+      "name": "NVIDIA"
+    },
+    "AAPL": {
+      "token": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+      "name": "Apple"
+    },
+    "PLTR": {
+      "token": "0x894E1EC2D74FFE5AEF8Dc8A9e84686acCB964F2A",
+      "name": "Palantir"
+    },
+    "META": {
+      "token": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
+      "name": "Meta"
+    }
+  },
+  "timelock": "0x3B4b24Ea05c2aa742174dA92a160B71bE157B54E",
+  "block": 81889899,
+  "usdg": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "token": null,
+  "tokenSetter": "0x3d2f9d09AddEeCE234df8c5D61C8322138301dea",
+  "swapAdapter": "0xC46F9eb98Fc79B98D43E345780290945B5C5f7C9",
+  "buyBurn": "0x0A0ACa93A85C9487EC8b0078cA6bb5FDfa1C5774",
+  "pendingTimelockAcceptances": [
+    "0xC46F9eb98Fc79B98D43E345780290945B5C5f7C9"
+  ]
+}

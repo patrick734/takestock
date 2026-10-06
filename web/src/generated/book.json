@@ -1,0 +1,12 @@
+{
+  "router": "0x12ca1c217bad3ce50ee399127417215e69121c9e",
+  "quoter": "0xe84646c768bfb06d09980022c3d9fc4afaceacd4",
+  "book": "0x464548fd63c5cba8cf56ca02914301964d9a7d5a",
+  "block": 81890416,
+  "buyBurn": "0x0A0ACa93A85C9487EC8b0078cA6bb5FDfa1C5774",
+  "timelock": "0x3B4b24Ea05c2aa742174dA92a160B71bE157B54E",
+  "swapAdapter": "0xC46F9eb98Fc79B98D43E345780290945B5C5f7C9",
+  "token": null,
+  "tokenSymbol": null,
+  "tokenName": null
+}
