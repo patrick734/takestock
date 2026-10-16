@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-13T19:52:12.468Z",
+  "updatedAt": "2026-10-16T17:23:34.090Z",
   "source": "https://api.robinhood.com/rhj/assets",
   "pools": [
     {
@@ -840,6 +840,13 @@
       "currency1": "0x5f10A1C971B69e47e059e1dC91901B59b3fB49C3",
       "fee": 10000,
       "tickSpacing": 200,
+      "hooks": "0x0000000000000000000000000000000000000000"
+    },
+    {
+      "currency0": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "currency1": "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC",
+      "fee": 100,
+      "tickSpacing": 1,
       "hooks": "0x0000000000000000000000000000000000000000"
     },
     {
